@@ -1,6 +1,6 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using WeatherStationServer.DomainServices;
 
 namespace WeatherStationServer.Controllers
 {
@@ -18,7 +18,7 @@ namespace WeatherStationServer.Controllers
         [HttpGet]
         public long Get()
         {
-            return new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds();
+            return TimeInfoProvider.GetCurrentTimestamp();
         }
     }
 }

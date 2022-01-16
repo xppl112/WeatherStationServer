@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using WeatherStationServer.DataAccess;
+using WeatherStationServer.DomainServices;
+using WeatherStationServer.Repositories;
 
 namespace WeatherStationServer
 {
@@ -18,7 +21,16 @@ namespace WeatherStationServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddOptions<WeatherStationDbOptions>()
+                .Bind(Configuration)
+                .Bind(Configuration.GetSection(WeatherStationDbOptions.ConfigurationDefaultKey));
+            services.AddDbContext<WeatherStationDbContext>();
+
+            services.AddSingleton<IReportsRepository, ReportsRepository>();
+
+            services
+                .AddControllersWithViews()
+                .AddNewtonsoftJson();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
