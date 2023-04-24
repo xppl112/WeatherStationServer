@@ -2,12 +2,9 @@
 
 namespace WeatherStationServer.Contracts
 {
-    public class OutdoorWeatherReportResponse
+    public class OverseasWeatherReportResponse
     {
-        [JsonProperty("ts")]
-        public long CurrentTimeStamp { get; set; }
-
-        [JsonProperty("nm")]
-        public bool IsNightMode { get; set; }
+        [JsonProperty("sds")]
+        public int SleepDurationSeconds { get; set; }
     }
 }

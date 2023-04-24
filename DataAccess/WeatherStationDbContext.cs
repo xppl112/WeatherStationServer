@@ -7,24 +7,14 @@ namespace WeatherStationServer.DataAccess
     public class WeatherStationDbContext : DbContext
     {
         public DbSet<OutdoorWeatherReportEntity> OutdoorWeatherReports { get; set; }
+        public DbSet<OverseasWeatherReportEntity> OverseasWeatherReports { get; set; }
+        public DbSet<OverseasWeatherIndoorReportEntity> OverseasWeatherIndoorReports { get; set; }
+        public DbSet<GermanyWeatherReportEntity> GermanyWeatherReports { get; set; }
 
-        private IOptionsMonitor<WeatherStationDbOptions> WeatherStationDbOptionsMonitor { get; }
-
-        public WeatherStationDbContext(DbContextOptions<WeatherStationDbContext> options, IOptionsMonitor<WeatherStationDbOptions> weatherStationDbOptionsMonitor)
+        public WeatherStationDbContext(DbContextOptions<WeatherStationDbContext> options)
             : base(options)
         {
-            WeatherStationDbOptionsMonitor = weatherStationDbOptionsMonitor;
-
-            Database.EnsureCreated();
-        }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {                
-                var connectionString = WeatherStationDbOptionsMonitor.CurrentValue.ConnectionString;
-                optionsBuilder.UseSqlServer(connectionString);
-            }
+            //Database.EnsureCreated();
         }
     }
 }

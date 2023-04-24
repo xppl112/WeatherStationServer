@@ -1,20 +1,40 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+using MySql.EntityFrameworkCore.Infrastructure;
 
-namespace WeatherStationServer
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services
+    .AddControllersWithViews()
+    .AddNewtonsoftJson();
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<WeatherStationDbContext>(options =>
 {
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            CreateHostBuilder(args).Build().Run();
-        }
+    options.UseMySQL(connectionString, (Action<MySQLDbContextOptionsBuilder>)null);
+});
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
-    }
+builder.Services.AddScoped<IReportsRepository, ReportsRepository>();
+
+var influxConfiguration = builder.Configuration.GetSection("Influx").Get<InfluxConfiguration>();
+
+Metrics.Collector = new CollectorConfiguration()
+    //.Batch.AtInterval(TimeSpan.FromSeconds(2))
+    .WriteTo.InfluxDB(influxConfiguration.ServerUrl, influxConfiguration.Database, influxConfiguration.Username, influxConfiguration.Password)
+    .CreateCollector();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
 }
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.Run();

@@ -1,12 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using WeatherStationServer.Contracts;
 using WeatherStationServer.DomainServices;
-using WeatherStationServer.Repositories;
 
 namespace WeatherStationServer.Controllers
 {
@@ -16,11 +12,17 @@ namespace WeatherStationServer.Controllers
     {
         private readonly ILogger<WeatherController> _logger;
         private readonly IReportsRepository ReportsRepository;
+        private readonly NightTimeConfiguration _nightTimeConfiguration;
+        private readonly OverseasMonitorConfiguration _overseasMonitorConfiguration;
+        private readonly GermanyMonitorConfiguration _germanyMonitorConfiguration;
 
-        public WeatherController(IReportsRepository reportsRepository, ILogger<WeatherController> logger)
+        public WeatherController(IReportsRepository reportsRepository, ILogger<WeatherController> logger, IConfiguration configuration)
         {
             ReportsRepository = reportsRepository;
             _logger = logger;
+            _nightTimeConfiguration = configuration.GetSection("NightTimeConfiguration").Get<NightTimeConfiguration>();
+            _overseasMonitorConfiguration = configuration.GetSection("OverseasMonitorConfiguration").Get<OverseasMonitorConfiguration>();
+            _germanyMonitorConfiguration = configuration.GetSection("GermanyMonitorConfiguration").Get<GermanyMonitorConfiguration>();
         }
 
         [HttpPost]
@@ -31,7 +33,7 @@ namespace WeatherStationServer.Controllers
             return new OutdoorWeatherReportResponse
             {
                 CurrentTimeStamp = TimeInfoProvider.GetCurrentTimestamp(),
-                IsNightMode = TimeInfoProvider.IsNightTime()
+                IsNightMode = TimeInfoProvider.IsNightTime(_nightTimeConfiguration)
             };
         }
 
@@ -47,7 +49,7 @@ namespace WeatherStationServer.Controllers
             return new OutdoorWeatherReportResponse
             {
                 CurrentTimeStamp = TimeInfoProvider.GetCurrentTimestamp(),
-                IsNightMode = TimeInfoProvider.IsNightTime()
+                IsNightMode = TimeInfoProvider.IsNightTime(_nightTimeConfiguration)
             };
         }
 
@@ -70,6 +72,66 @@ namespace WeatherStationServer.Controllers
             };
 
             return JsonConvert.SerializeObject(response);
+        }
+
+
+        [HttpPost]
+        public async Task<OverseasWeatherReportResponse> PostOverseasReport(OverseasWeatherReport report)
+        {
+            var result = await ReportsRepository.StoreOverseasWeatherReport(report);
+
+            return new OverseasWeatherReportResponse
+            {
+                SleepDurationSeconds = _overseasMonitorConfiguration.SleepDurationSeconds
+            };
+        }
+
+
+        [HttpPost]
+        public async Task<OverseasWeatherDataItem> PostOverseasIndoorReport([FromBody]OverseasWeatherIndoorReport report)
+        {
+            var result = await ReportsRepository.StoreOverseasWeatherIndoorReport(report);
+
+            var data = ReportsRepository.GetLastOverseasOutdoorReports(1);
+            
+            data.ForEach(r =>
+            {
+                r.Pressure = (float)Math.Round(r.Pressure - 1000, 1);
+            });
+
+            return data.FirstOrDefault();
+        }
+
+        [HttpGet]
+        public OverseasWeatherIndoorResponse GetOverseasData([FromQuery] int c = 30)
+        {
+            var currentTimeStamp = new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds();
+
+            var data = ReportsRepository.GetLastOverseasOutdoorReports(c);
+            data.ForEach(r =>
+            {
+                r.Pressure = (float)Math.Round(r.Pressure - 1000, 1);
+            });
+
+            return new OverseasWeatherIndoorResponse
+            {
+                CurrentTimeStamp = currentTimeStamp,
+                Data = data
+            };
+        }
+
+
+        [HttpPost]
+        public async Task<GermanyWeatherReportResponse> PostGermanyReport(GermanyWeatherReport report)
+        {
+            var result = await ReportsRepository.StoreGermanyWeatherReport(report);
+
+            return new GermanyWeatherReportResponse
+            {
+                SleepDurationSeconds = _germanyMonitorConfiguration.SleepDurationSeconds,
+                MeasureAirQualityCycle = _germanyMonitorConfiguration.MeasureAirQualityCycle,
+                AirQualityMeasurementDurationSeconds = _germanyMonitorConfiguration.AirQualityMeasurementDurationSeconds
+            };
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace WeatherStationServer.DomainServices
+﻿namespace WeatherStationServer.DomainServices
 {
     public static class TimeInfoProvider
     {
@@ -9,9 +7,11 @@ namespace WeatherStationServer.DomainServices
             return new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds();
         }
 
-        public static bool IsNightTime()
+        public static bool IsNightTime(NightTimeConfiguration config)
         {
-            TimeZoneInfo localTimeZone = null;
+            if (!config.IsEnabled) return false;
+
+            TimeZoneInfo? localTimeZone = null;
             try
             {
                 localTimeZone = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
@@ -22,7 +22,7 @@ namespace WeatherStationServer.DomainServices
             var localDateTime = DateTime.Now.ToLocalTime();
             if (localTimeZone != null) { localDateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, localTimeZone); }
 
-            return localDateTime.Hour >= 1 && localDateTime.Hour < 7;
+            return localDateTime.Hour >= config.FromHour && localDateTime.Hour < config.ToHour;
         }
     }
 }

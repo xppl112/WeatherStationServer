@@ -1,11 +1,10 @@
 ﻿namespace WeatherStationServer.Configuration
 {
-    public class InfluxConfiguration
+    public class NightTimeConfiguration
     {
-        public string ServerUrl { get; set; }
-        public string Database { get; set; }
-        public string Username { get; set; }
-        public string Password { get; set; }
+        public bool IsEnabled { get; set; }
+        public int FromHour { get; set; }
+        public int ToHour { get; set; }
     }
 }
 

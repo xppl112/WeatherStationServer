@@ -1,10 +1,8 @@
 ﻿namespace WeatherStationServer.Configuration
 {
-    public class NightTimeConfiguration
+    public class OverseasMonitorConfiguration
     {
-        public bool IsEnabled { get; set; }
-        public int FromHour { get; set; }
-        public int ToHour { get; set; }
+        public int SleepDurationSeconds { get; set; }
     }
 }
 

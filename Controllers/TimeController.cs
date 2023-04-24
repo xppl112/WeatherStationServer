@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using WeatherStationServer.Contracts;
 using WeatherStationServer.DomainServices;
 
 namespace WeatherStationServer.Controllers
@@ -19,6 +20,16 @@ namespace WeatherStationServer.Controllers
         public long Get()
         {
             return TimeInfoProvider.GetCurrentTimestamp();
+        }
+
+        [HttpPost]
+        public GetServerDataResponse GetServerData(int testEcho, string testString)
+        {
+            return new GetServerDataResponse {
+                Timestamp = TimeInfoProvider.GetCurrentTimestamp(),
+                TestEcho = testEcho,
+                TestString = testString
+            };
         }
     }
 }

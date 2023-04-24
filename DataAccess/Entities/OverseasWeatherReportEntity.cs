@@ -1,31 +1,32 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json;
 
 namespace WeatherStationServer.DataAccess.Entities
 {
-    public class OutdoorWeatherReportEntity
+    public class OverseasWeatherReportEntity
     {
         [Key]
         public long Id { get; set; }
 
         public DateTime Date { get; set; }
 
-        public long TimeStampOfStart { get; set; }
-        public long TimeStampOfFinish { get; set; }
+        public long TimeStamp { get; set; }
 
-        public decimal TemperatureOutside { get; set; }
-        public int HumidityOutside { get; set; }
-        public decimal PressureOutside { get; set; }
+        public decimal Temperature { get; set; }
+        public int Humidity { get; set; }
+        public decimal Pressure { get; set; }
 
-        public decimal TemperatureInside { get; set; }
-        public int HumidityInside { get; set; }
+        public int RaindropLevel { get; set; }
+        public decimal UvLevel { get; set; }
+        public int LightLevel { get; set; }
+        public int WindLevel { get; set; }
 
-        public int PM1_0 { get; set; }
-        public int PM2_5 { get; set; }
-        public int PM_10_0 { get; set; }
+        public decimal BatteryVoltage { get; set; }
+        public decimal BatteryCurrentIdle { get; set; }
+        public decimal BatteryCurrencyWifiOn { get; set; }
 
-        public long RestartsCount { get; set; }
-
-        public int WifiErrors { get; set; }
+        public int WifiSignalLevel { get; set; }
+        public int WifiErrorsCount { get; set; }
     }
 }
